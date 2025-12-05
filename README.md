@@ -2,6 +2,19 @@
 
 This repository contains a Fabric modding project setup for Minecraft version 1.21.10.
 
+## ⚠️ IMPORTANT: Client Sources Missing
+
+**This repository currently contains only SERVER source code.** The client source code (GUI, rendering, etc.) is missing and needs to be added.
+
+**→ See [ADD_CLIENT_SOURCES.md](ADD_CLIENT_SOURCES.md) for instructions on how to add the client sources.**
+
+Quick fix:
+```bash
+./download-and-decompile-client.sh
+```
+
+**📚 Getting compilation errors?** See [DEPENDENCIES.md](DEPENDENCIES.md) for information about missing dependencies and how to handle decompiled source code.
+
 ## Prerequisites
 
 - Java Development Kit (JDK) 21 or higher

@@ -13,6 +13,7 @@ base {
 repositories {
     // Add repositories to retrieve artifacts from in here.
     mavenCentral()
+    maven { url 'https://libraries.minecraft.net' }
 }
 
 loom {
@@ -34,6 +35,39 @@ dependencies {
 
     // Fabric API. This is technically optional, but you probably want it anyway.
     modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
+    
+    // ============================================================================
+    // Optional: Additional Dependencies for Decompiled Source Code Compilation
+    // ============================================================================
+    // The decompiled Minecraft sources (in net/minecraft/) are for REFERENCE ONLY.
+    // You should NOT try to compile them as part of your mod.
+    //
+    // However, if you're getting compilation errors related to missing classes
+    // when working with Minecraft internals in your own mod code, you may need
+    // to add some of these dependencies. Uncomment only what you need.
+    //
+    // See DEPENDENCIES.md for detailed information about each dependency.
+    // ============================================================================
+    
+    // Authlib - Authentication and GameProfile (usually provided by Minecraft)
+    // Uncomment if you get errors about GameProfile, getName(), getId(), etc.
+    // implementation 'com.mojang:authlib:6.0.54'
+    
+    // JOrbis - Ogg Vorbis audio decoding (for custom audio handling)
+    // Uncomment if you get errors about com.jcraft.jorbis
+    // implementation 'com.github.stephengold:j-ogg-all:1.0.4'
+    
+    // Brigadier - Command system (usually provided by Minecraft)
+    // Uncomment if you get errors about com.mojang.brigadier
+    // implementation 'com.mojang:brigadier:1.3.10'
+    
+    // DataFixerUpper - Data versioning (usually provided by Minecraft)
+    // Uncomment if you get errors about com.mojang.datafixers or com.mojang.serialization
+    // implementation 'com.mojang:datafixerupper:8.0.16'
+    
+    // NOTE: Most Minecraft dependencies are already provided via the minecraft dependency.
+    // Only add these if you're directly using these libraries in YOUR mod code.
+    // See DEPENDENCIES.md for more information.
 }
 
 processResources {
@@ -83,34 +117,128 @@ publishing {
 // Custom task to extract decompiled Minecraft sources to project root
 task extractMinecraftSources {
     group = 'minecraft'
-    description = 'Extracts decompiled Minecraft source code to the project root directory'
+    description = 'Extracts decompiled Minecraft source code (both client and server) to the project root directory'
     
     dependsOn 'genSources'
     
     doLast {
-        println "Searching for Minecraft sources..."
+        println "=" * 70
+        println "Extracting Minecraft Source Code"
+        println "=" * 70
+        println ""
+        println "Searching for Minecraft sources in Loom cache..."
+        println ""
         
         // Find the sources jar in the Loom cache
         def loomCache = file(".gradle/loom-cache")
-        def sourcesJar = null
+        def sourcesJarList = []
         
+        if (!loomCache.exists()) {
+            println "ERROR: Loom cache directory not found at ${loomCache.absolutePath}"
+            println "Please run './gradlew genSources' first to generate sources."
+            return
+        }
+        
+        // Find all sources jars (there may be multiple: client, server, common)
         loomCache.eachFileRecurse { file ->
             if (file.name.contains("minecraft") && file.name.contains("sources.jar") && !file.name.contains("javadoc")) {
-                sourcesJar = file
-                println "Found sources jar: ${file.absolutePath}"
-                return true // Early termination after finding first match
+                sourcesJarList.add(file)
+                println "Found sources jar: ${file.name}"
             }
         }
         
-        if (sourcesJar != null && sourcesJar.exists()) {
-            println "Extracting sources to project root..."
+        if (sourcesJarList.isEmpty()) {
+            println ""
+            println "WARNING: Could not find any Minecraft sources jars in Loom cache."
+            println "Please run './gradlew genSources' first to generate sources."
+            return
+        }
+        
+        println ""
+        println "Found ${sourcesJarList.size()} source jar(s)"
+        println ""
+        
+        // Extract all sources jars to project root
+        def extractedFiles = 0
+        sourcesJarList.each { sourcesJar ->
+            println "Extracting: ${sourcesJar.name}..."
+            def tree = zipTree(sourcesJar)
             copy {
-                from zipTree(sourcesJar)
+                from tree
                 into file('.')
             }
-            println "Successfully extracted Minecraft sources to project root!"
-        } else {
-            println "WARNING: Could not find Minecraft sources jar. Run 'genSources' first."
+            extractedFiles += tree.files.size()
         }
+        
+        println ""
+        println "Successfully extracted ${extractedFiles} source files to project root!"
+        println ""
+        
+        // Also copy to MOVETHIS folder
+        def movethisDir = file('MOVETHIS')
+        if (movethisDir.exists()) {
+            println "Updating MOVETHIS folder with extracted sources..."
+            
+            // Copy net and com directories
+            if (file('net').exists()) {
+                copy {
+                    from file('net')
+                    into file('MOVETHIS/net')
+                }
+                println "✓ Copied net/ to MOVETHIS/net/"
+            }
+            
+            if (file('com').exists()) {
+                copy {
+                    from file('com')
+                    into file('MOVETHIS/com')
+                }
+                println "✓ Copied com/ to MOVETHIS/com/"
+            }
+            
+            println ""
+        }
+        
+        // Verify extraction
+        println "Verification:"
+        def clientDir = file('net/minecraft/client')
+        def serverDir = file('net/minecraft/server')
+        
+        if (clientDir.exists()) {
+            def clientFiles = fileTree(clientDir).matching { include '**/*.java' }.files.size()
+            println "✓ Client sources: ${clientFiles} files"
+        } else {
+            println "⚠ Client sources: NOT FOUND (may be generated separately)"
+        }
+        
+        if (serverDir.exists()) {
+            def serverFiles = fileTree(serverDir).matching { include '**/*.java' }.files.size()
+            println "✓ Server sources: ${serverFiles} files"
+        } else {
+            println "⚠ Server sources: NOT FOUND"
+        }
+        
+        def totalFiles = fileTree('net/minecraft').matching { include '**/*.java' }.files.size()
+        println "✓ Total Minecraft sources: ${totalFiles} files"
+        
+        println ""
+        println "=" * 70
+        println "Source extraction complete!"
+        println "=" * 70
+        println ""
+        println "The decompiled Minecraft source code is now available in:"
+        println "  - net/minecraft/        (Project root)"
+        println "  - MOVETHIS/net/minecraft/  (Transfer copy)"
+        println ""
+        println "Next steps:"
+        println "  1. Browse the sources in your IDE"
+        println "  2. Use them as reference for mod development"
+        println "  3. Start coding your mod in src/main/java/"
+        println ""
+        println "IMPORTANT:"
+        println "  - Decompiled sources are for REFERENCE only, not for compilation"
+        println "  - If you get compilation errors, see DEPENDENCIES.md"
+        println "  - Write your mod code in src/main/java/, not in net/minecraft/"
+        println ""
     }
 }

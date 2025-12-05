@@ -1,8 +1,23 @@
 # 👋 START HERE
 
+## ⚠️ IMPORTANT NOTICE
+
+**This repository is missing CLIENT source code!** It currently only has server-side Minecraft code.
+
+**YOU MUST ADD CLIENT SOURCES before you can fully develop mods.**
+
+→ **Read [ADD_CLIENT_SOURCES.md](ADD_CLIENT_SOURCES.md) for complete instructions.**
+
+Quick fix (requires network access):
+```bash
+./download-and-decompile-client.sh
+```
+
+---
+
 ## What Just Happened?
 
-Your Minecraft 1.21.10 Fabric modding project has been **fully set up and is ready to use**!
+Your Minecraft 1.21.10 Fabric modding project has been **partially set up** with server sources only.
 
 ## 🎯 What You Need To Do NOW
 
