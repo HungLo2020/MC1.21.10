@@ -7,8 +7,9 @@ buildscript {
     }
     dependencies {
         // VineFlower (FernFlower) decompiler
+        // Using 1.10.1 for stability and compatibility with Java 21 and modern Minecraft versions
         classpath 'org.vineflower:vineflower:1.10.1'
-        // For HTTP requests
+        // For HTTP requests and file operations
         classpath 'commons-io:commons-io:2.15.1'
     }
 }

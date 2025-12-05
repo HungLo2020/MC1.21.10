@@ -98,6 +98,7 @@ task extractMinecraftSources {
             if (file.name.contains("minecraft") && file.name.contains("sources.jar") && !file.name.contains("javadoc")) {
                 sourcesJar = file
                 println "Found sources jar: ${file.absolutePath}"
+                return true // Early termination after finding first match
             }
         }
         
