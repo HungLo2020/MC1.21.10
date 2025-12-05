@@ -5,7 +5,6 @@ out/
 classes/
 
 # IDEA
-.idea/
 *.iml
 *.ipr
 *.iws
@@ -33,3 +32,9 @@ logs/
 # Temporary files
 *.tmp
 *.temp
+
+# Decompiled Minecraft sources (only commit your mod code, not MC source)
+# Uncomment the following lines if you want to exclude decompiled sources:
+# net/
+# com/mojang/
+# minecraft-client.jar
