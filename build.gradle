@@ -13,6 +13,8 @@ base {
 repositories {
     // Add repositories to retrieve artifacts from in here.
     mavenCentral()
+    maven { url 'https://libraries.minecraft.net' }
+    // maven { url 'https://maven.fabricmc.net' } // Already available via Loom
 }
 
 loom {
@@ -34,6 +36,39 @@ dependencies {
 
     // Fabric API. This is technically optional, but you probably want it anyway.
     modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
+    
+    // ============================================================================
+    // Optional: Additional Dependencies for Decompiled Source Code Compilation
+    // ============================================================================
+    // The decompiled Minecraft sources (in net/minecraft/) are for REFERENCE ONLY.
+    // You should NOT try to compile them as part of your mod.
+    //
+    // However, if you're getting compilation errors related to missing classes
+    // when working with Minecraft internals in your own mod code, you may need
+    // to add some of these dependencies. Uncomment only what you need.
+    //
+    // See DEPENDENCIES.md for detailed information about each dependency.
+    // ============================================================================
+    
+    // Authlib - Authentication and GameProfile (usually provided by Minecraft)
+    // Uncomment if you get errors about GameProfile, getName(), getId(), etc.
+    // implementation 'com.mojang:authlib:6.0.54'
+    
+    // JOrbis - Ogg Vorbis audio decoding (for custom audio handling)
+    // Uncomment if you get errors about com.jcraft.jorbis
+    // implementation 'com.github.stephengold:j-ogg-all:1.0.4'
+    
+    // Brigadier - Command system (usually provided by Minecraft)
+    // Uncomment if you get errors about com.mojang.brigadier
+    // implementation 'com.mojang:brigadier:1.3.10'
+    
+    // DataFixerUpper - Data versioning (usually provided by Minecraft)
+    // Uncomment if you get errors about com.mojang.datafixers or com.mojang.serialization
+    // implementation 'com.mojang:datafixerupper:8.0.16'
+    
+    // NOTE: Most Minecraft dependencies are already provided via the minecraft dependency.
+    // Only add these if you're directly using these libraries in YOUR mod code.
+    // See DEPENDENCIES.md for more information.
 }
 
 processResources {
@@ -200,6 +235,11 @@ task extractMinecraftSources {
         println "  1. Browse the sources in your IDE"
         println "  2. Use them as reference for mod development"
         println "  3. Start coding your mod in src/main/java/"
+        println ""
+        println "IMPORTANT:"
+        println "  - Decompiled sources are for REFERENCE only, not for compilation"
+        println "  - If you get compilation errors, see DEPENDENCIES.md"
+        println "  - Write your mod code in src/main/java/, not in net/minecraft/"
         println ""
     }
 }

@@ -13,6 +13,8 @@ Quick fix:
 ./download-and-decompile-client.sh
 ```
 
+**📚 Getting compilation errors?** See [DEPENDENCIES.md](DEPENDENCIES.md) for information about missing dependencies and how to handle decompiled source code.
+
 ## Prerequisites
 
 - Java Development Kit (JDK) 21 or higher

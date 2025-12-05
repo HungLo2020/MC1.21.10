@@ -231,17 +231,29 @@ Once the client sources are added:
    find net/minecraft/client -name "*.java" | wc -l
    ```
 
-2. **Test the build:**
+2. **Important: Read the Dependencies Guide**
+   ```bash
+   cat DEPENDENCIES.md
+   ```
+   
+   The decompiled sources are for **reference only**. If you get compilation errors:
+   - Don't try to compile the decompiled sources
+   - Write your mod code in `src/main/java/`
+   - See `DEPENDENCIES.md` for handling missing dependencies
+
+3. **Test the build:**
    ```bash
    ./gradlew build
    ```
+   
+   Note: This builds YOUR mod code, not the decompiled sources.
 
-3. **Test running the client:**
+4. **Test running the client:**
    ```bash
    ./gradlew runClient
    ```
 
-4. **Commit the changes:**
+5. **Commit the changes:**
    ```bash
    git add net/ MOVETHIS/
    git commit -m "Add Minecraft 1.21.10 client source code"
