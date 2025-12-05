@@ -1,0 +1,85 @@
+// Custom Gradle script to download and decompile Minecraft
+// This is a workaround since fabric maven repository is not accessible
+
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+        // VineFlower (FernFlower) decompiler
+        // Using 1.10.1 for stability and compatibility with Java 21 and modern Minecraft versions
+        classpath 'org.vineflower:vineflower:1.10.1'
+        // For HTTP requests and file operations
+        classpath 'commons-io:commons-io:2.15.1'
+    }
+}
+
+repositories {
+    mavenCentral()
+}
+
+// Task to manually download and decompile Minecraft
+task downloadAndDecompileMinecraft {
+    group = 'minecraft'
+    description = 'Downloads Minecraft JAR and decompiles it to the project root'
+    
+    doLast {
+        println "=" * 60
+        println "Minecraft 1.21.10 Decompilation Task"
+        println "=" * 60
+        
+        // Note: This requires access to launcher meta Mojang and piston-data URLs
+        // Since these are currently not accessible, we need manual intervention
+        
+        println ""
+        println "IMPORTANT: This task requires access to the following domains:"
+        println "  - launchermeta.mojang.com (for version manifest)"
+        println "  - piston-data.mojang.com (for downloading Minecraft JAR)"
+        println "  - maven.fabricmc.net (for Fabric Loom)"
+        println ""
+        println "These domains appear to be blocked in the current environment."
+        println ""
+        println "ALTERNATIVE APPROACH:"
+        println "1. Request whitelist access for the above domains, OR"
+        println "2. Manually provide the Minecraft client JAR file"
+        println "3. Then this script can decompile it"
+        println ""
+        println "=" * 60
+    }
+}
+
+// Task to decompile a provided Minecraft JAR
+task decompileMinecraftJar {
+    group = 'minecraft'
+    description = 'Decompiles a Minecraft JAR file (minecraft-client.jar) if provided'
+    
+    doLast {
+        def minecraftJar = file('minecraft-client.jar')
+        
+        if (!minecraftJar.exists()) {
+            println "ERROR: minecraft-client.jar not found in project root"
+            println "Please provide the Minecraft 1.21.10 client JAR file"
+            return
+        }
+        
+        println "Found Minecraft JAR: ${minecraftJar.absolutePath}"
+        println "Starting decompilation..."
+        
+        // Create output directory for decompiled sources
+        def outputDir = file('.')
+        
+        // Use VineFlower to decompile
+        try {
+            org.jetbrains.java.decompiler.main.decompiler.ConsoleDecompiler.main([
+                minecraftJar.absolutePath,
+                outputDir.absolutePath
+            ] as String[])
+            
+            println "Decompilation complete!"
+            println "Decompiled sources are in: ${outputDir.absolutePath}"
+        } catch (Exception e) {
+            println "Error during decompilation: ${e.message}"
+            e.printStackTrace()
+        }
+    }
+}

@@ -1,0 +1,40 @@
+# Gradle
+.gradle/
+build/
+out/
+classes/
+
+# IDEA
+*.iml
+*.ipr
+*.iws
+
+# vscode
+.settings/
+.vscode/
+bin/
+.classpath
+.project
+
+# macOS
+*.DS_Store
+
+# Fabric
+run/
+logs/
+
+# Java
+*.class
+*.log
+*.jar
+!gradle-wrapper.jar
+
+# Temporary files
+*.tmp
+*.temp
+
+# Decompiled Minecraft sources (only commit your mod code, not MC source)
+# Uncomment the following lines if you want to exclude decompiled sources:
+# net/
+# com/mojang/
+# minecraft-client.jar
