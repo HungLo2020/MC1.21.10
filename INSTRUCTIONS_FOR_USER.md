@@ -1,5 +1,18 @@
 # Instructions: Adding Client Source Code
 
+## ⚠️ UPDATE: Version Error Fix
+
+If you got the error `Could not find Minecraft 1.21.10 in version manifest`, I've fixed the scripts with better JSON parsing. 
+
+**Run this first to diagnose:**
+```bash
+./test-version-lookup.sh
+```
+
+See [FIX_VERSION_ERROR.md](FIX_VERSION_ERROR.md) for complete troubleshooting.
+
+---
+
 ## Current Situation
 
 Your repository has been set up with scripts and documentation to add the missing Minecraft client source code. However, **I cannot run the download and decompilation myself** due to network access restrictions.
