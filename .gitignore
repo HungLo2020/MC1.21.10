@@ -1,0 +1,35 @@
+# Gradle
+.gradle/
+build/
+out/
+classes/
+
+# IDEA
+.idea/
+*.iml
+*.ipr
+*.iws
+
+# vscode
+.settings/
+.vscode/
+bin/
+.classpath
+.project
+
+# macOS
+*.DS_Store
+
+# Fabric
+run/
+logs/
+
+# Java
+*.class
+*.log
+*.jar
+!gradle-wrapper.jar
+
+# Temporary files
+*.tmp
+*.temp
