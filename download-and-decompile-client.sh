@@ -83,10 +83,49 @@ if ! $DOWNLOAD_STDOUT "$VERSION_MANIFEST_URL" > "$TEMP_DIR/version_manifest.json
 fi
 
 # Extract version URL for 1.21.10
-VERSION_URL=$(cat "$TEMP_DIR/version_manifest.json" | grep -o '"id":"'$MC_VERSION'"' -A 5 | grep '"url":' | head -1 | sed 's/.*"url":"\([^"]*\)".*/\1/')
+# Using Python for reliable JSON parsing
+if command -v python3 &> /dev/null; then
+    VERSION_URL=$(python3 -c "
+import json, sys
+try:
+    with open('$TEMP_DIR/version_manifest.json', 'r') as f:
+        data = json.load(f)
+    for version in data.get('versions', []):
+        if version.get('id') == '$MC_VERSION':
+            print(version.get('url', ''))
+            sys.exit(0)
+    sys.exit(1)
+except Exception as e:
+    print(f'Error: {e}', file=sys.stderr)
+    sys.exit(1)
+" 2>/dev/null)
+else
+    # Fallback to grep/sed (less reliable but works if no Python)
+    VERSION_URL=$(grep -A 10 "\"id\".*:.*\"$MC_VERSION\"" "$TEMP_DIR/version_manifest.json" | grep '"url"' | head -1 | sed 's/.*"url"[^"]*"\([^"]*\)".*/\1/')
+fi
 
 if [ -z "$VERSION_URL" ]; then
     echo -e "${RED}ERROR: Could not find Minecraft $MC_VERSION in version manifest${NC}"
+    echo ""
+    echo "This could mean:"
+    echo "  1. Version $MC_VERSION doesn't exist (typo?)"
+    echo "  2. Mojang's manifest format changed"
+    echo "  3. Network/parsing issue"
+    echo ""
+    echo "Debug: Checking available versions..."
+    if command -v python3 &> /dev/null; then
+        python3 -c "
+import json
+with open('$TEMP_DIR/version_manifest.json', 'r') as f:
+    data = json.load(f)
+print('Recent versions:')
+for v in data.get('versions', [])[:10]:
+    print(f\"  - {v.get('id')} ({v.get('type')})\")
+" 2>/dev/null || echo "Could not parse manifest"
+    else
+        echo "Install Python3 for better debugging"
+        grep -o '"id":"[^"]*"' "$TEMP_DIR/version_manifest.json" | head -10
+    fi
     exit 1
 fi
 
@@ -103,7 +142,20 @@ if ! $DOWNLOAD_STDOUT "$VERSION_URL" > "$TEMP_DIR/version.json"; then
 fi
 
 # Extract client download URL
-CLIENT_URL=$(cat "$TEMP_DIR/version.json" | grep -A 2 '"client":' | grep '"url":' | head -1 | sed 's/.*"url":"\([^"]*\)".*/\1/')
+if command -v python3 &> /dev/null; then
+    CLIENT_URL=$(python3 -c "
+import json
+try:
+    with open('$TEMP_DIR/version.json', 'r') as f:
+        data = json.load(f)
+    print(data.get('downloads', {}).get('client', {}).get('url', ''))
+except Exception:
+    pass
+" 2>/dev/null)
+else
+    # Fallback
+    CLIENT_URL=$(grep -A 5 '"client"' "$TEMP_DIR/version.json" | grep '"url"' | head -1 | sed 's/.*"url"[^"]*"\([^"]*\)".*/\1/')
+fi
 
 if [ -z "$CLIENT_URL" ]; then
     echo -e "${RED}ERROR: Could not find client download URL in version metadata${NC}"

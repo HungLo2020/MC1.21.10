@@ -45,11 +45,39 @@ fi
 echo ""
 echo "Step 1: Fetching version manifest..."
 
-# Download and parse version manifest
-VERSION_URL=$($DOWNLOAD_STDOUT "$VERSION_MANIFEST_URL" | grep -o '"id":"'$MC_VERSION'"' -A 5 | grep '"url":' | head -1 | sed 's/.*"url":"\([^"]*\)".*/\1/')
+# Download manifest to temp file for parsing
+TEMP_MANIFEST="/tmp/mc_manifest_$$.json"
+if ! $DOWNLOAD_STDOUT "$VERSION_MANIFEST_URL" > "$TEMP_MANIFEST"; then
+    echo "ERROR: Failed to download version manifest"
+    rm -f "$TEMP_MANIFEST"
+    exit 1
+fi
+
+# Parse with Python if available (more reliable)
+if command -v python3 &> /dev/null; then
+    VERSION_URL=$(python3 -c "
+import json, sys
+try:
+    with open('$TEMP_MANIFEST', 'r') as f:
+        data = json.load(f)
+    for version in data.get('versions', []):
+        if version.get('id') == '$MC_VERSION':
+            print(version.get('url', ''))
+            sys.exit(0)
+    sys.exit(1)
+except Exception:
+    sys.exit(1)
+" 2>/dev/null)
+else
+    # Fallback to grep/sed
+    VERSION_URL=$(grep -A 10 "\"id\".*:.*\"$MC_VERSION\"" "$TEMP_MANIFEST" | grep '"url"' | head -1 | sed 's/.*"url"[^"]*"\([^"]*\)".*/\1/')
+fi
+
+rm -f "$TEMP_MANIFEST"
 
 if [ -z "$VERSION_URL" ]; then
     echo "ERROR: Could not find Minecraft $MC_VERSION"
+    echo "Please verify the version number is correct"
     exit 1
 fi
 
@@ -58,7 +86,29 @@ echo ""
 echo "Step 2: Fetching version metadata..."
 
 # Download and parse version metadata
-CLIENT_URL=$($DOWNLOAD_STDOUT "$VERSION_URL" | grep -A 2 '"client":' | grep '"url":' | head -1 | sed 's/.*"url":"\([^"]*\)".*/\1/')
+TEMP_VERSION="/tmp/mc_version_$$.json"
+if ! $DOWNLOAD_STDOUT "$VERSION_URL" > "$TEMP_VERSION"; then
+    echo "ERROR: Failed to download version metadata"
+    rm -f "$TEMP_VERSION"
+    exit 1
+fi
+
+# Parse client URL
+if command -v python3 &> /dev/null; then
+    CLIENT_URL=$(python3 -c "
+import json
+try:
+    with open('$TEMP_VERSION', 'r') as f:
+        data = json.load(f)
+    print(data.get('downloads', {}).get('client', {}).get('url', ''))
+except Exception:
+    pass
+" 2>/dev/null)
+else
+    CLIENT_URL=$(grep -A 5 '"client"' "$TEMP_VERSION" | grep '"url"' | head -1 | sed 's/.*"url"[^"]*"\([^"]*\)".*/\1/')
+fi
+
+rm -f "$TEMP_VERSION"
 
 if [ -z "$CLIENT_URL" ]; then
     echo "ERROR: Could not find client download URL"

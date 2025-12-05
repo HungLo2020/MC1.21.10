@@ -120,6 +120,25 @@ Currently, the repository has approximately 4,500 files but is missing the clien
 
 ## Troubleshooting
 
+### Version Not Found Error
+
+If you get:
+```
+ERROR: Could not find Minecraft 1.21.10 in version manifest
+```
+
+**Solution**: Run the diagnostic script to check:
+```bash
+./test-version-lookup.sh
+```
+
+This will show:
+- If the version exists in Mojang's manifest
+- Available recent versions
+- What the correct version number should be
+
+If 1.21.10 doesn't exist, check `gradle.properties` and update `minecraft_version` to a valid version.
+
 ### Network Access Denied
 
 If you get network errors:
